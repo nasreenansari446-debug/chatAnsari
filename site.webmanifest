@@ -1,0 +1,19 @@
+{
+    "name": "ChatANSARI Engine",
+    "short_name": "ChatANSARI",
+    "icons": [
+        {
+            "src": "/favicon-48x48.png",
+            "sizes": "48x48",
+            "type": "image/png"
+        },
+        {
+            "src": "/apple-touch-icon.png",
+            "sizes": "180x180",
+            "type": "image/png"
+        }
+    ],
+    "theme_color": "#030305",
+    "background_color": "#030305",
+    "display": "standalone"
+}
