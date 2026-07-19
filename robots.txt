@@ -7,4 +7,4 @@ Disallow: /config/
 Disallow: /private/
 
 # Link to your sitemap location
-Sitemap: https://yourdomain.com/sitemap.xml
+Sitemap: https://chatansari.onrender.com/sitemap.xml
