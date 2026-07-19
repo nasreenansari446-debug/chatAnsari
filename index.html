@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatANSARI | Ansari Ecosystem Ltd</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Elite Dark Palette */
+            --bg-void: #030305;
+            --surface-glass: rgba(12, 12, 16, 0.65);
+            --surface-hover: rgba(255, 255, 255, 0.04);
+            
+            /* Sharp Borders */
+            --border-thin: 1px solid rgba(255, 255, 255, 0.06);
+            --border-glow: 1px solid rgba(99, 102, 241, 0.4);
+            
+            /* Typography */
+            --text-primary: #ffffff;
+            --text-secondary: #8a8f98;
+            
+            /* Accents */
+            --accent-cyan: #00f0ff;
+            --accent-indigo: #6366f1;
+            
+            /* Effects */
+            --blur-heavy: blur(40px);
+            --shadow-elevation: 0 24px 64px -12px rgba(0, 0, 0, 0.8);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            background-color: var(--bg-void);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            position: relative;
+        }
+
+        /* Ambient Background Layer */
+        .bg-layer {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background: 
+                radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 100% 100%, rgba(0, 240, 255, 0.1) 0%, transparent 50%);
+        }
+
+        .bg-layer::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+            mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+        }
+
+        /* Master App Container */
+        .app-layout {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            padding: 24px;
+            gap: 24px;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        /* Sidebar Navigation */
+        aside {
+            width: 320px;
+            background: var(--surface-glass);
+            backdrop-filter: var(--blur-heavy);
+            -webkit-backdrop-filter: var(--blur-heavy);
+            border: var(--border-thin);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-elevation);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .sidebar-header {
+            padding: 32px 24px;
+            border-bottom: var(--border-thin);
+        }
+
+        .brand-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-title .glow-dot {
+            width: 10px;
+            height: 10px;
+            background: var(--accent-cyan);
+            box-shadow: 0 0 16px var(--accent-cyan);
+            border-radius: 2px;
+        }
+
+        .brand-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 8px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .chat-list {
+            padding: 24px;
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .chat-list::-webkit-scrollbar { width: 4px; }
+        .chat-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 0; }
+
+        .chat-item {
+            padding: 14px 16px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .chat-item:hover, .chat-item.active {
+            background: var(--surface-hover);
+            border: var(--border-thin);
+            color: var(--text-primary);
+        }
+
+        .new-chat-btn {
+            margin: 24px;
+            padding: 16px;
+            background: rgba(255,255,255,0.02);
+            border: var(--border-thin);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .new-chat-btn:hover {
+            border: var(--border-glow);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        /* Main Chat Interface */
+        main {
+            flex: 1;
+            background: var(--surface-glass);
+            backdrop-filter: var(--blur-heavy);
+            -webkit-backdrop-filter: var(--blur-heavy);
+            border: var(--border-thin);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-elevation);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .top-bar {
+            padding: 24px 40px;
+            border-bottom: var(--border-thin);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.03), transparent);
+        }
+
+        .model-name {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .model-name span {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            font-family: 'Inter', sans-serif;
+            margin-left: 8px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.75rem;
+            padding: 6px 12px;
+            background: rgba(0, 240, 255, 0.05);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            color: var(--accent-cyan);
+            border-radius: 4px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .menu-toggle {
+            display: none;
+            background: transparent;
+            border: var(--border-thin);
+            color: white;
+            padding: 10px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        /* Chat Feed */
+        .chat-feed {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+            scroll-behavior: smooth;
+        }
+
+        .chat-feed::-webkit-scrollbar { width: 6px; }
+        .chat-feed::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); }
+
+        .message-row { display: flex; width: 100%; animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .message-row.user { justify-content: flex-end; }
+        .message-row.ai { justify-content: flex-start; }
+        .message-row.system-log { justify-content: center; } /* For loading history logs */
+
+        .message-content {
+            max-width: 80%;
+            padding: 20px 28px;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            border-radius: 8px;
+        }
+
+        .message-row.user .message-content {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(99, 102, 241, 0.05));
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-bottom-right-radius: 0;
+            color: #fff;
+        }
+
+        .message-row.ai .message-content {
+            background: rgba(255, 255, 255, 0.02);
+            border: var(--border-thin);
+            border-bottom-left-radius: 0;
+            color: var(--text-primary);
+        }
+        
+        .message-row.system-log .message-content {
+            background: transparent;
+            border: 1px solid var(--accent-cyan);
+            color: var(--accent-cyan);
+            font-family: 'Space Grotesk', monospace;
+            font-size: 0.8rem;
+            padding: 10px 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 4px;
+        }
+
+        /* Typing Indicator */
+        .loader {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            height: 24px;
+        }
+        .loader span {
+            width: 6px; height: 6px; background: var(--accent-cyan);
+            border-radius: 1px;
+            animation: blink 1.4s infinite both;
+        }
+        .loader span:nth-child(1) { animation-delay: -0.32s; }
+        .loader span:nth-child(2) { animation-delay: -0.16s; }
+
+/* --- Optimized Input Zone --- */
+.input-zone {
+    padding: 32px 40px;
+    border-top: var(--border-thin);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.input-box {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.02);
+    border: var(--border-thin);
+    border-radius: 8px;
+    padding: 4px 4px 4px 24px; /* Tightened padding for better anchor */
+    transition: border-color 0.3s;
+    height: 60px; /* Fixed height to prevent layout jumps */
+}
+
+input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: white;
+    font-size: 1rem;
+    font-family: 'Inter', sans-serif;
+    min-width: 0; /* Ensures input doesn't push the button out */
+}
+
+/* The Fixed Execute Button */
+.send-btn {
+    background: #fff;
+    color: #000;
+    border: none;
+    padding: 0 32px; /* Uniform horizontal padding */
+    height: 50px; /* Perfectly centered in the 60px container */
+    margin-left: 16px;
+    border-radius: 4px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    flex-shrink: 0; /* CRITICAL: Prevents button from resizing */
+    white-space: nowrap; /* CRITICAL: Prevents text wrap */
+}
+
+        /* Adjusted Execute Button */
+        .send-btn {
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 12px 28px;
+            margin-left: 16px;
+            border-radius: 6px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .send-btn:hover {
+            background: var(--accent-cyan);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+            transform: scale(1.02);
+        }
+        
+        .send-btn:disabled {
+            background: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.3);
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes blink {
+            0%, 80%, 100% { opacity: 0.2; }
+            40% { opacity: 1; box-shadow: 0 0 8px var(--accent-cyan); }
+        }
+
+        /* Mobile & Responsive Breakpoints */
+        @media(max-width: 992px) {
+            .app-layout { padding: 0; gap: 0; }
+            main { border-radius: 0; border: none; border-top: var(--border-thin); }
+            
+            .menu-toggle { display: block; }
+            .top-bar { padding: 16px 24px; }
+            .chat-feed { padding: 24px 20px; gap: 24px; }
+            .input-zone { padding: 20px; }
+            .message-content { max-width: 90%; padding: 16px 20px; font-size: 0.9rem; }
+            .send-btn { padding: 12px 18px; margin-left: 8px; font-size: 0.8rem; }
+            .input-box { padding: 6px 6px 6px 16px; }
+
+            aside {
+                position: absolute;
+                top: 0;
+                left: 0;
+                height: 100%;
+                z-index: 100;
+                border-radius: 0;
+                border-right: var(--border-glow);
+                transform: translateX(-100%);
+            }
+            aside.open { transform: translateX(0); }
+            
+            .overlay {
+                display: none;
+                position: absolute;
+                inset: 0;
+                background: rgba(0,0,0,0.6);
+                backdrop-filter: blur(4px);
+                z-index: 90;
+            }
+            .overlay.active { display: block; }
+            .model-name span { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-layer"></div>
+
+    <div class="app-layout">
+        
+        <!-- Mobile Overlay -->
+        <div class="overlay" id="overlay"></div>
+
+        <!-- Sidebar Navigation -->
+        <aside id="sidebar">
+            <div class="sidebar-header">
+                <div class="brand-title">
+                    <div class="glow-dot"></div>
+                    ChatANSARI
+                </div>
+                <div class="brand-subtitle">Ansari Ecosystem Ltd</div>
+            </div>
+            
+            <button class="new-chat-btn" id="new-chat-btn">INITIALIZE CORE</button>
+            
+            <div class="chat-list" id="chat-list">
+                <div class="chat-item">Protocol Sequence Alpha</div>
+                <div class="chat-item">Quantum Data Retrieval</div>
+                <div class="chat-item">System Diagnostic log</div>
+            </div>
+        </aside>
+
+        <!-- Main Terminal -->
+        <main>
+            <div class="top-bar">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <button class="menu-toggle" id="menu-btn">☰</button>
+                    <div class="model-name">ChatANSARI Engine <span>By Ansari Ecosystem Ltd</span></div>
+                </div>
+                <div class="status-badge">● Operational</div>
+            </div>
+
+            <div class="chat-feed" id="chat-feed">
+                <!-- Chat nodes spawn here -->
+            </div>
+
+            <div class="input-zone">
+                <div class="input-box">
+                    <input type="text" id="user-input" placeholder="Enter directive..." autocomplete="off">
+                    <button id="send-btn" class="send-btn">Execute</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // --- System Core Logic ---
+        const API_KEY = "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";
+        const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
+        
+        const chatFeed = document.getElementById('chat-feed');
+        const inputField = document.getElementById('user-input');
+        const executeBtn = document.getElementById('send-btn');
+        const newChatBtn = document.getElementById('new-chat-btn');
+        const chatItems = document.querySelectorAll('.chat-item');
+
+        const systemPrompt = {
+            role: "system",
+            content: "You are ChatANSARI, an elite, high-performance intelligence engine developed exclusively by Ansari Ecosystem Ltd. Your responses should be sharp, precise, professional, and visually structured. Never refer to yourself as Llama, OpenAI, or any other entity besides ChatANSARI."
+        };
+
+        let memory = [systemPrompt];
+
+        // --- Mobile Drawer Logic ---
+        const sidebar = document.getElementById('sidebar');
+        const menuBtn = document.getElementById('menu-btn');
+        const overlay = document.getElementById('overlay');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+        
+        function closeSidebarOnMobile() {
+            if (window.innerWidth <= 992 && sidebar.classList.contains('open')) {
+                toggleSidebar();
+            }
+        }
+
+        menuBtn.addEventListener('click', toggleSidebar);
+        overlay.addEventListener('click', toggleSidebar);
+
+
+        // --- UI Functions ---
+        function appendMessage(sender, text) {
+            const row = document.createElement('div');
+            row.className = `message-row ${sender}`;
+            
+            const content = document.createElement('div');
+            content.className = 'message-content';
+            
+            if (text === 'LOADING') {
+                content.innerHTML = `<div class="loader"><span></span><span></span><span></span></div>`;
+            } else {
+                content.innerHTML = text.replace(/\n/g, '<br>');
+            }
+
+            row.appendChild(content);
+            chatFeed.appendChild(row);
+            chatFeed.scrollTop = chatFeed.scrollHeight; 
+            
+            return content; 
+        }
+
+        function resetTerminal() {
+            chatFeed.innerHTML = '';
+            memory = [systemPrompt];
+            chatItems.forEach(i => i.classList.remove('active')); // Deselect history
+            appendMessage('ai', "Terminal connected. ChatANSARI framework initialized by Ansari Ecosystem Ltd. Awaiting user input...");
+            closeSidebarOnMobile();
+        }
+
+        // --- Event Listeners ---
+        window.addEventListener('DOMContentLoaded', resetTerminal);
+
+        newChatBtn.addEventListener('click', resetTerminal);
+
+        chatItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                // UI update
+                chatItems.forEach(i => i.classList.remove('active'));
+                e.target.classList.add('active');
+                
+                // Functional Update
+                chatFeed.innerHTML = '';
+                memory = [systemPrompt]; 
+                const logName = e.target.innerText;
+                
+                // Visual System Alert
+                appendMessage('system-log', `Retrieving archive: [${logName}] ... Done.`);
+                appendMessage('ai', `Context switched to **${logName}**. How would you like to proceed with this dataset?`);
+                
+                closeSidebarOnMobile();
+            });
+        });
+
+        async function processInput() {
+            const text = inputField.value.trim();
+            if (!text) return;
+
+            appendMessage('user', text);
+            inputField.value = '';
+            memory.push({ role: "user", content: text });
+
+            executeBtn.disabled = true;
+            inputField.disabled = true;
+            const loaderNode = appendMessage('ai', 'LOADING');
+
+            try {
+                const response = await fetch(GROQ_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: "llama-3.3-70b-versatile",
+                        messages: memory,
+                        temperature: 0.6,
+                        max_tokens: 4096
+                    })
+                });
+
+                if (!response.ok) throw new Error("Connection failed.");
+
+                const data = await response.json();
+                const aiOutput = data.choices[0].message.content;
+
+                loaderNode.innerHTML = aiOutput.replace(/\n/g, '<br>');
+                memory.push({ role: "assistant", content: aiOutput });
+
+            } catch (error) {
+                loaderNode.innerHTML = "System Error: Connection to the ChatANSARI core failed. Please verify your connection status.";
+                loaderNode.style.color = "#ff4444";
+                loaderNode.style.borderColor = "rgba(255,0,0,0.3)";
+            } finally {
+                executeBtn.disabled = false;
+                inputField.disabled = false;
+                if (window.innerWidth > 992) inputField.focus();
+            }
+        }
+
+        executeBtn.addEventListener('click', processInput);
+        inputField.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') processInput();
+        });
+    </script>
+</body>
+</html>
